@@ -1,0 +1,24 @@
+
+{
+  "id": "./",
+  "name": "Studyhub Zim",
+  "short_name": "Studyhub",
+  "description": "Your learning hub for MedStudy, O Level and A Level.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f5f8fc",
+  "theme_color": "#123b70",
+  "categories": [
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
