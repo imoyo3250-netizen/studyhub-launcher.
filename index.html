@@ -244,5 +244,15 @@
   </main>
 
   <footer>Studyhub Zim · Your learning, all in one place</footer>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js")
+        .then(() => console.log("Studyhub service worker registered"))
+        .catch((error) => console.error("Service worker registration failed:", error));
+    });
+  }
+</script>
 </body>
 </html>
