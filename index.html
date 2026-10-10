@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123b70">
+  <meta name="description" content="Studyhub Zim connects students to MedStudy, O Level and A Level learning websites.">
+  <title>Studyhub Zim</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+
+  <style>
+    :root {
+      --navy: #123b70;
+      --blue: #1675d1;
+      --green: #18864b;
+      --purple: #7437bd;
+      --text: #172b46;
+      --muted: #617087;
+      --bg: #f5f8fc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid #e5eaf1;
+      padding: 24px 18px;
+      text-align: center;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      background: #e8f2ff;
+      color: var(--navy);
+      border-radius: 16px;
+      width: 54px;
+      height: 54px;
+      font-size: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(25px, 5vw, 38px);
+      letter-spacing: -1.3px;
+    }
+
+    h1 span { color: var(--blue); }
+
+    .tagline {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 30px 18px;
+    }
+
+    .welcome { margin-bottom: 22px; }
+
+    .welcome h2 {
+      margin: 0 0 7px;
+      font-size: 24px;
+    }
+
+    .welcome p {
+      margin: 0;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5eaf1;
+      border-radius: 20px;
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      box-shadow: 0 5px 18px #16365c0a;
+    }
+
+    .symbol {
+      width: 58px;
+      height: 58px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      font-size: 31px;
+      margin-bottom: 17px;
+    }
+
+    .medical .symbol { background: #e4f2ff; }
+    .olevel .symbol { background: #e5f7e9; }
+    .alevel .symbol { background: #f0e8ff; }
+
+    .card h3 {
+      font-size: 22px;
+      margin: 0 0 7px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0 0 22px;
+      flex: 1;
+    }
+
+    .open {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 12px 15px;
+      border-radius: 12px;
+      color: white;
+      transition: filter .2s, transform .2s;
+    }
+
+    .open:hover { filter: brightness(.94); }
+    .open:active { transform: scale(.98); }
+    .medical .open { background: var(--blue); }
+    .olevel .open { background: var(--green); }
+    .alevel .open { background: var(--purple); }
+
+    .note {
+      margin-top: 25px;
+      background: #eaf2fc;
+      border-radius: 14px;
+      padding: 15px 17px;
+      color: #294d77;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 650px) {
+      main { padding: 25px 14px; }
+      .cards { grid-template-columns: 1fr; gap: 14px; }
+      .card {
+        display: grid;
+        grid-template-columns: 58px 1fr;
+        column-gap: 14px;
+        padding: 17px;
+      }
+      .symbol { grid-row: 1 / 3; margin: 0; }
+      .card h3 { align-self: end; }
+      .card p { margin: 4px 0 14px; }
+      .open { grid-column: 1 / -1; }
+    }
+
+    @media (min-width: 651px) and (max-width: 800px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🎓</div>
+      <h1>Studyhub <span>Zim</span></h1>
+    </div>
+    <p class="tagline">Learn · Practise · Excel</p>
+  </header>
+
+  <main>
+    <section class="welcome">
+      <h2>Your learning hub</h2>
+      <p>Choose your study platform to get started.</p>
+    </section>
+
+    <section class="cards" aria-label="Study websites">
+      <article class="card medical">
+        <div class="symbol" aria-hidden="true">🩺</div>
+        <h3>MedStudy</h3>
+        <p>Medical quizzes and learning resources for your studies.</p>
+        <a class="open"
+           href="https://imoyo3250-netizen.github.io/medprep/">
+          Open MedStudy →
+        </a>
+      </article>
+
+      <article class="card olevel">
+        <div class="symbol" aria-hidden="true">📚</div>
+        <h3>O Level</h3>
+        <p>Practise your subjects and prepare for examinations.</p>
+        <a class="open"
+           href="https://imoyo3250-netizen.github.io/O-Level-/">
+          Open O Level →
+        </a>
+      </article>
+
+      <article class="card alevel">
+        <div class="symbol" aria-hidden="true">⚛️</div>
+        <h3>A Level</h3>
+        <p>Explore advanced subjects and prepare for examinations.</p>
+        <a class="open"
+           href="https://imoyo3250-netizen.github.io/A-Level/">
+          Open A Level →
+        </a>
+      </article>
+    </section>
+
+    <div class="note">
+      💡 <strong>Study anywhere.</strong> Open your preferred website
+      using the buttons above. An internet connection is required.
+    </div>
+  </main>
+
+  <footer>Studyhub Zim · Your learning, all in one place</footer>
+</body>
+</html>
