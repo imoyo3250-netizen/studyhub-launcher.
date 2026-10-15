@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b70">
+<title>MedStudy Access</title>
+<style>
+:root{--navy:#123b70;--blue:#1675d1;--bg:#f5f8fc;--ink:#172b46;--muted:#617087;--line:#dce6f2;--red:#b42318;--green:#18794e}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:12px;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center}
+main{width:100%;max-width:620px;background:#fff;border:1px solid #e3eaf3;border-radius:22px;padding:20px;box-shadow:0 10px 30px #16365c12}
+header{text-align:center;margin-bottom:20px}.logo{font-size:38px}h1{font-size:28px;margin:5px 0}header p,.muted{color:var(--muted);line-height:1.55}
+.panel{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}h2{font-size:20px;margin:0 0 8px}p{line-height:1.5}.panel p{color:var(--muted);margin:0 0 14px}
+button,.button{display:block;width:100%;border:0;border-radius:11px;padding:13px 15px;font:inherit;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;margin-top:10px}
+button:disabled{opacity:.6;cursor:wait}.primary{background:var(--blue);color:#fff}.secondary{background:#eaf2fc;color:var(--navy)}.light{background:#f0f3f8;color:var(--ink);border:1px solid var(--line)}
+input,select{display:block;width:100%;border:1px solid #cbd7e6;border-radius:10px;padding:12px;margin:7px 0 13px;font:inherit;background:#fff;color:var(--ink)}
+label{font-size:13px;font-weight:700}small{color:var(--muted);line-height:1.5;display:block}
+.hidden{display:none!important}.status{margin-top:13px;padding:11px;border-radius:10px;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.status:empty{display:none}.status.error{background:#fff0ef;color:var(--red)}.status.ok{background:#eaf8f0;color:var(--green)}.status.info{background:#eaf2fc;color:var(--navy)}
+.back{text-align:center;margin-top:14px}.back button{background:transparent;color:var(--muted);padding:8px}
+table{border-collapse:collapse;width:100%;font-size:12px;margin-top:12px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+</style>
+</head>
+<body><main>
+<header><div class="logo" aria-hidden="true">🩺</div><h1>MedStudy Hub</h1><p>Choose how you want to continue.</p></header>
+<section id="choiceView">
+ <article class="panel"><h2>USERS</h2><p>Sign in or register with your email, username and password. Successful sign-in opens the existing MedStudy Hub.</p><button class="primary" id="chooseUsers">USERS — Sign In / Register</button></article>
+ <article class="panel"><h2>CREDENTIALS</h2><p>Professor/administrator sign-in for uploading tests and loading student results.</p><button class="secondary" id="chooseProfessor">CREDENTIALS — Professor Sign In</button></article>
+</section>
+<section id="authView" class="hidden">
+ <h2 id="authHeading">User Sign In</h2><p id="authDescription" class="muted"></p>
+ <form id="authForm">
+  <label for="email">Email</label><input id="email" type="email" autocomplete="email" required placeholder="you@example.com">
+  <label for="username">Username</label><input id="username" type="text" autocomplete="username" required placeholder="Your username">
+  <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Password (at least 6 characters)">
+  <button class="primary" id="signInButton" type="submit">Sign In</button><button class="secondary" id="registerButton" type="button">Register</button>
+ </form>
+ <div id="authStatus" class="status" role="status" aria-live="polite"></div><div class="back"><button id="backToChoices" type="button">← Back to USERS / CREDENTIALS</button></div>
+</section>
+<section id="professorView" class="hidden">
+ <h2>Professor Dashboard</h2><p id="professorIdentity" class="muted"></p>
+ <article class="panel"><h2>1. Upload Test</h2><p>Upload a JSON test. The file is validated and sent to the secure Supabase publishing function.</p>
+  <label for="examTitle">Test title</label><input id="examTitle" placeholder="e.g. Histology Test 1">
+  <label for="examSubject">Subject</label><input id="examSubject" placeholder="e.g. Histology">
+  <label for="examTopic">Topic (optional)</label><input id="examTopic" placeholder="e.g. Epithelium">
+  <label for="examType">Question type</label><select id="examType"><option value="true_false">True / False</option><option value="multiple_choice">Multiple choice</option></select>
+  <label for="examDuration">Duration in minutes (optional)</label><input id="examDuration" type="number" min="1" placeholder="30">
+  <label for="examAttempts">Maximum attempts</label><input id="examAttempts" type="number" min="1" value="1">
+  <label for="examNegative">Negative marking</label><select id="examNegative"><option value="false">Off</option><option value="true">On</option></select>
+  <label for="examFile">Test file (.json)</label><input id="examFile" type="file" accept=".json,application/json">
+  <small>JSON example: {"title":"Test","subject":"Histology","question_type":"true_false","negative_marking":true,"max_attempts":1,"questions":[{"question":"Statement","answer":true,"explanation":"Why"}]}. MCQs need an "options" array and an "answer" matching one option.</small>
+  <button class="primary" id="publishExam" type="button">Upload &amp; Publish Test</button><div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
+ </article>
+ <article class="panel"><h2>2. Load Results</h2><p>View results permitted by your Supabase policies.</p><button class="secondary" id="loadResults" type="button">Load Results</button><div id="resultsStatus" class="status" role="status" aria-live="polite"></div><div id="resultsArea"></div></article>
+ <article class="panel"><h2>3. Visit Webpage</h2><p>Open the existing medical quiz website.</p><a class="button primary" href="https://imoyo3250-netizen.github.io/medprep/">Visit MedStudy Hub →</a></article>
+ <button id="signOut" class="light" type="button">Sign Out</button>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+'use strict';
+const SUPABASE_URL = "https://igxmvgcqpcngkzrppqms.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EtS5E2K4bnibaqkZSoTQiQ_SQCUf6-b";
+const MEDSTUDY_URL = "https://imoyo3250-netizen.github.io/medprep/";
+const $ = id => document.getElementById(id);
+const viewIds = ["choiceView","authView","professorView"];
+let supabaseClient = null;
+let mode = "user";
+
+function client() {
+  if (!window.supabase) throw new Error("Supabase library failed to load. Check your internet connection.");
+  if (!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  return supabaseClient;
+}
+function showView(id) {
+  viewIds.forEach(viewId => $(viewId).classList.toggle("hidden", viewId !== id));
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function setStatus(id, text, type="info") {
+  $(id).textContent = text;
+  $(id).className = "status " + type;
+}
+function setBusy(id, busy, label) {
+  $(id).disabled = busy;
+  $(id).textContent = busy ? "Please wait…" : label;
+}
+async function getProfile(user) {
+  const {data,error} = await client().from("profiles")
+    .select("id,username,full_name,role").eq("id",user.id).maybeSingle();
+  if (error) throw new Error("Could not verify your profiles record: " + error.message);
+  return data;
+}
+async function usernameMatches(user, typedUsername) {
+  const metadataUsername = user.user_metadata && user.user_metadata.username;
+  if (metadataUsername && String(metadataUsername).trim().toLowerCase() === typedUsername.trim().toLowerCase()) return true;
+  const profile = await getProfile(user);
+  return !!(profile && profile.username && String(profile.username).trim().toLowerCase() === typedUsername.trim().toLowerCase());
+}
+function beginAuth(nextMode) {
+  mode = nextMode;
+  $("authHeading").textContent = nextMode === "professor" ? "CREDENTIALS — Professor Sign In" : "USERS — Sign In / Register";
+  $("authDescription").textContent = nextMode === "professor"
+    ? "Use an account already authorised as professor or admin."
+    : "Sign in or register with your email, username and password.";
+  $("username").value = "";
+  $("password").value = "";
+  setStatus("authStatus","");
+  showView("authView");
+}
+$("chooseUsers").addEventListener("click", () => beginAuth("user"));
+$("chooseProfessor").addEventListener("click", () => beginAuth("professor"));
+$("backToChoices").addEventListener("click", () => showView("choiceView"));
+
+$("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  setBusy("signInButton",true,"Sign In");
+  setStatus("authStatus","");
+  try {
+    const {data,error} = await client().auth.signInWithPassword({
+      email:$("email").value.trim(), password:$("password").value
+    });
+    if (error) throw error;
+    if (!data.user) throw new Error("Supabase did not return a signed-in user.");
+    if (!(await usernameMatches(data.user,$("username").value))) {
+      await client().auth.signOut();
+      throw new Error("The username does not match this account. Check the username used when registering.");
+    }
+    if (mode === "user") {
+      window.location.replace(MEDSTUDY_URL);
+      return;
+    }
+    const profile = await getProfile(data.user);
+    if (!profile || !["professor","admin"].includes(String(profile.role || "").toLowerCase())) {
+      await client().auth.signOut();
+      throw new Error("This account is not authorised for CREDENTIALS. An administrator must set profiles.role to professor or admin.");
+    }
+    $("professorIdentity").textContent = "Signed in as " + (profile.full_name || profile.username || data.user.email) + " (" + profile.role + ").";
+    showView("professorView");
+  } catch (error) {
+    setStatus("authStatus",error.message || "Sign-in failed.","error");
+  } finally {
+    setBusy("signInButton",false,"Sign In");
+  }
+});
+
+$("registerButton").addEventListener("click", async () => {
+  setStatus("authStatus","");
+  if (mode !== "user") {
+    setStatus("authStatus","Professor accounts must be created and authorised by an administrator. Student registration cannot grant professor access.","error");
+    return;
+  }
+  const email = $("email").value.trim();
+  const username = $("username").value.trim();
+  const password = $("password").value;
+  if (!email || !username || password.length < 6) {
+    setStatus("authStatus","Enter a valid email, username and password of at least 6 characters.","error");
+    return;
+  }
+  setBusy("registerButton",true,"Register");
+  try {
+    const {data,error} = await client().auth.signUp({email,password,options:{data:{username}}});
+    if (error) throw error;
+    if (data.session) {
+      setStatus("authStatus","Account created. Sign in to continue.","ok");
+    } else {
+      setStatus("authStatus","Registration submitted. Check your email to confirm the account. If Supabase says 'Signups not allowed', enable email signups in Supabase Authentication settings.","ok");
+    }
+  } catch (error) {
+    const detail = error.message || "Unknown error";
+    setStatus("authStatus","Registration failed: " + detail + (detail.toLowerCase().includes("signups not allowed") ? " — enable Email signups in Supabase Authentication settings." : ""),"error");
+  } finally {
+    setBusy("registerButton",false,"Register");
+  }
+});
+
+function normalizeQuestions(parsed) {
+  const input = Array.isArray(parsed) ? parsed : parsed.questions;
+  if (!Array.isArray(input) || input.length === 0) throw new Error("The JSON must contain a non-empty questions array.");
+  return input.map((question,index) => {
+    const questionText = String(question.question || question.text || question.question_text || "").trim();
+    const answer = Object.prototype.hasOwnProperty.call(question,"answer") ? question.answer : question.correct_answer;
+    if (!questionText || answer === undefined) throw new Error("Question " + (index+1) + " needs question text and an answer.");
+    return {question_text:questionText, options:question.options === undefined ? null : question.options,
+      position:index+1, explanation:String(question.explanation || ""), correct_answer:answer};
+  });
+}
+$("publishExam").addEventListener("click", async () => {
+  setBusy("publishExam",true,"Upload & Publish Test");
+  setStatus("uploadStatus","");
+  try {
+    const {data:authData,error:authError} = await client().auth.getUser();
+    if (authError || !authData.user) throw new Error("Your session has expired. Sign in again.");
+    const profile = await getProfile(authData.user);
+    if (!profile || !["professor","admin"].includes(String(profile.role || "").toLowerCase())) throw new Error("Professor/admin access is required.");
+    const file = $("examFile").files[0];
+    if (!file) throw new Error("Choose a JSON test file first.");
+    const parsed = JSON.parse(await file.text());
+    const questions = normalizeQuestions(parsed);
+    const title = $("examTitle").value.trim() || parsed.title || file.name.replace(/\.json$/i,"");
+    const subject = $("examSubject").value.trim() || parsed.subject;
+    if (!title || !subject) throw new Error("Enter the test title and subject.");
+    const questionType = $("examType").value;
+    for (let i=0;i<questions.length;i++) {
+      const answer = questions[i].correct_answer;
+      if (questionType === "true_false" && typeof answer !== "boolean") throw new Error("Question " + (i+1) + ": True/False answers must be true or false.");
+      if (questionType === "multiple_choice") {
+        const options = questions[i].options;
+        if (!Array.isArray(options) || options.length < 2 || !options.some(option => String(option) === String(answer))) {
+          throw new Error("Question " + (i+1) + " needs an options array and an answer matching one option.");
+        }
+      }
+    }
+    const payload = {
+      title, subject, topic:$("examTopic").value.trim() || parsed.topic || null,
+      question_type:questionType, negative_marking:$("examNegative").value === "true",
+      duration_minutes:$("examDuration").value ? Number($("examDuration").value) : null,
+      max_attempts:Number($("examAttempts").value || 1),
+      questions:questions
+    };
+    if (!Number.isInteger(payload.max_attempts) || payload.max_attempts < 1) throw new Error("Maximum attempts must be a positive whole number.");
+    if (payload.duration_minutes !== null && (!Number.isInteger(payload.duration_minutes) || payload.duration_minutes < 1)) throw new Error("Duration must be a positive whole number of minutes.");
+    // The RPC must insert exams, exam_questions and exam_answer_keys in one transaction.
+    const {data,error} = await client().rpc("publish_exam_with_questions",{p_exam:payload});
+    if (error) throw new Error("Supabase could not publish this test: " + error.message + ". The publish_exam_with_questions database function must be installed and match your table schema.");
+    setStatus("uploadStatus","Published successfully. Database response: " + JSON.stringify(data),"ok");
+    $("examFile").value = "";
+  } catch (error) {
+    setStatus("uploadStatus",error.message || "Upload failed.","error");
+  } finally {
+    setBusy("publishExam",false,"Upload & Publish Test");
+  }
+});
+
+$("loadResults").addEventListener("click", async () => {
+  setBusy("loadResults",true,"Load Results");
+  setStatus("resultsStatus","");
+  $("resultsArea").replaceChildren();
+  try {
+    const {data:authData,error:authError} = await client().auth.getUser();
+    if (authError || !authData.user) throw new Error("Your session has expired. Sign in again.");
+    const profile = await getProfile(authData.user);
+    if (!profile || !["professor","admin"].includes(String(profile.role || "").toLowerCase())) throw new Error("Professor/admin access is required.");
+    const {data,error} = await client().from("exam_results").select("*").limit(200);
+    if (error) throw new Error("Could not load exam_results: " + error.message);
+    if (!data || !data.length) {
+      setStatus("resultsStatus","No results returned. Check that results exist and professor SELECT policies allow access.","info");
+      return;
+    }
+    const table = document.createElement("table");
+    const columns = Object.keys(data[0]);
+    const header = document.createElement("tr");
+    columns.forEach(column => { const th = document.createElement("th"); th.textContent = column; header.appendChild(th); });
+    table.appendChild(header);
+    data.forEach(row => {
+      const tr = document.createElement("tr");
+      columns.forEach(column => { const td = document.createElement("td"); const value = row[column]; td.textContent = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value); tr.appendChild(td); });
+      table.appendChild(tr);
+    });
+    $("resultsArea").appendChild(table);
+    setStatus("resultsStatus","Loaded " + data.length + " result records visible under your Supabase permissions.","ok");
+  } catch (error) {
+    setStatus("resultsStatus","Could not load results: " + (error.message || "Unknown error"),"error");
+  } finally {
+    setBusy("loadResults",false,"Load Results");
+  }
+});
+$("signOut").addEventListener("click",async()=>{try{await client().auth.signOut();}catch(_){}showView("choiceView");});
+showView("choiceView");
+})();
+</script></main></body></html>
