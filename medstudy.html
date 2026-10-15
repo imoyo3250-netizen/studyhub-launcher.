@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#123b70">
+<title>MedStudy Access</title>
+<style>
+:root{--navy:#123b70;--blue:#1675d1;--bg:#f5f8fc;--ink:#172b46;--muted:#617087;--line:#dce6f2;--red:#b42318;--green:#18794e}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:20px;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center}
+main{width:100%;max-width:600px;background:#fff;border:1px solid #e3eaf3;border-radius:22px;padding:24px;box-shadow:0 10px 30px #16365c12}
+header{text-align:center;margin-bottom:22px}.logo{font-size:40px}h1{font-size:27px;margin:5px 0}header p,.muted{color:var(--muted);line-height:1.55;font-size:14px}
+.panel{border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0}
+h2{font-size:20px;margin:0 0 7px}p{line-height:1.5}.panel p{font-size:14px;color:var(--muted);margin:0 0 14px}
+button,.button{display:block;width:100%;border:0;border-radius:11px;padding:13px 15px;font:inherit;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;margin-top:10px}
+.primary{background:var(--blue);color:#fff}.secondary{background:#eaf2fc;color:var(--navy)}.light{background:#f0f3f8;color:var(--ink);border:1px solid var(--line)}
+input,select,textarea{display:block;width:100%;border:1px solid #cbd7e6;border-radius:10px;padding:12px;margin:7px 0 13px;font:inherit;background:white;color:var(--ink)}
+label{font-size:13px;font-weight:700}small{color:var(--muted);line-height:1.5;display:block}
+.hidden{display:none!important}.status{margin-top:14px;padding:11px;border-radius:10px;font-size:14px;line-height:1.5;overflow-wrap:anywhere}.status:empty{display:none}.status.error{background:#fff0ef;color:var(--red)}.status.ok{background:#eaf8f0;color:var(--green)}.status.info{background:#eaf2fc;color:var(--navy)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row button{margin-top:0}
+.back{margin-top:18px;text-align:center}.back button{background:transparent;color:var(--muted);padding:8px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+ul{padding-left:20px;color:var(--muted);line-height:1.7;font-size:14px}
+@media(max-width:460px){body{padding:12px}main{padding:17px}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="logo" aria-hidden="true">🩺</div>
+  <h1>MedStudy Hub</h1>
+  <p>Choose how you want to continue.</p>
+</header>
+
+<section id="choiceView">
+  <article class="panel">
+    <h2>USERS</h2>
+    <p>Students and learners: sign in or register, then continue to the existing MedStudy website.</p>
+    <button class="primary" id="chooseUsers">Continue as User</button>
+  </article>
+  <article class="panel">
+    <h2>CREDENTIALS</h2>
+    <p>Professors: sign in with your authorised professor account to access exam management and results.</p>
+    <button class="secondary" id="chooseProfessor">Professor Sign In</button>
+  </article>
+  <p class="muted">You must sign in yourself. This page will not automatically sign you in.</p>
+</section>
+
+<section id="authView" class="hidden">
+  <h2 id="authHeading">Sign in</h2>
+  <p id="authDescription" class="muted">Enter your account details.</p>
+  <form id="authForm">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="email" required placeholder="you@example.com">
+    <label for="username">Username</label>
+    <input id="username" type="text" autocomplete="username" required placeholder="Your username">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="Password">
+    <button class="primary" id="signInButton" type="submit">Sign In</button>
+    <button class="secondary" id="registerButton" type="button">Register</button>
+  </form>
+  <div id="authStatus" class="status" role="status" aria-live="polite"></div>
+  <div class="back"><button type="button" id="backToChoices">← Back to USERS / CREDENTIALS</button></div>
+</section>
+
+<section id="professorView" class="hidden">
+  <h2>Professor Dashboard</h2>
+  <p class="muted">Signed in with an account authorised for professor access.</p>
+  <div class="panel">
+    <h2>1. Upload Test</h2>
+    <p>Choose a structured JSON question file to prepare an online exam.</p>
+    <label for="examTitle">Test title</label>
+    <input id="examTitle" type="text" placeholder="e.g. Histology Test 1">
+    <label for="examFile">Question file (.json)</label>
+    <input id="examFile" type="file" accept=".json,application/json">
+    <small>Expected JSON format: {"title":"Test title","questions":[{"question":"Statement","answer":true,"explanation":"Why"}]}. Answers must be true or false. Uploading a file alone does not publish an exam.</small>
+    <button class="primary" id="prepareExam" type="button">Prepare / Upload Test</button>
+    <div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
+  </div>
+  <div class="panel">
+    <h2>2. Load Results</h2>
+    <p>Retrieve exam results that your signed-in professor account is permitted to view in Supabase.</p>
+    <button class="secondary" id="loadResults" type="button">Load Results</button>
+    <div id="resultsStatus" class="status" role="status" aria-live="polite"></div>
+    <div id="resultsArea"></div>
+  </div>
+  <div class="panel">
+    <h2>3. Visit Webpage</h2>
+    <p>Open your existing MedStudy Hub website.</p>
+    <a class="button primary" href="https://imoyo3250-netizen.github.io/medprep/">Visit MedStudy Hub →</a>
+  </div>
+  <button id="signOut" class="light" type="button">Sign Out</button>
+</section>
+
+<section id="userContinueView" class="hidden">
+  <h2>Sign-in successful</h2>
+  <p>Your account has been verified. Continue to the existing MedStudy Hub.</p>
+  <a class="button primary" href="https://imoyo3250-netizen.github.io/medprep/">Open MedStudy Hub →</a>
+  <button class="light" id="userSignOut" type="button">Sign Out</button>
+</section>
+<div id="globalStatus" class="status" role="status" aria-live="polite"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  const SUPABASE_URL = "https://igxmvgcqpcngkzrppqms.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EtS5E2K4bnibaqkZSoTQiQ_SQCUf6-b";
+  const MEDSTUDY_URL = "https://imoyo3250-netizen.github.io/medprep/";
+  const $ = id => document.getElementById(id);
+  const views = ["choiceView","authView","professorView","userContinueView"];
+  let client = null;
+  let accessMode = "user";
+  let currentUser = null;
+  let preparedQuestions = null;
+
+  function showView(id) {
+    views.forEach(v => $(v).classList.toggle("hidden", v !== id));
+    $("globalStatus").textContent = "";
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function setStatus(id, message, type="info") {
+    const el = $(id); el.textContent = message; el.className = "status " + type;
+  }
+  function clearStatus(...ids) { ids.forEach(id => { $(id).textContent=""; $(id).className="status"; }); }
+  function initClient() {
+    if (!window.supabase) throw new Error("Supabase client did not load. Check your internet connection and try again.");
+    if (!client) client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    return client;
+  }
+  function beginAuth(mode) {
+    accessMode = mode;
+    $("authHeading").textContent = mode === "professor" ? "Professor Sign In" : "User Sign In";
+    $("authDescription").textContent = mode === "professor"
+      ? "Use your authorised professor account. Registration does not automatically grant professor access."
+      : "Sign in or register with your email, username and password.";
+    $("username").value = "";
+    $("password").value = "";
+    $("password").autocomplete = "current-password";
+    clearStatus("authStatus");
+    showView("authView");
+  }
+  async function verifyUsername(user, typedUsername) {
+    const metaName = user && user.user_metadata && (user.user_metadata.username || user.user_metadata.name);
+    if (metaName && String(metaName).toLowerCase() === typedUsername.toLowerCase()) return true;
+    try {
+      const {data,error} = await initClient().from("profiles").select("username").eq("id",user.id).maybeSingle();
+      if (!error && data && data.username && String(data.username).toLowerCase() === typedUsername.toLowerCase()) return true;
+    } catch (_) {}
+    return false;
+  }
+  async function getRole(user) {
+    const metaRole = user && user.user_metadata && user.user_metadata.role;
+    try {
+      const {data,error} = await initClient().from("profiles").select("role").eq("id",user.id).maybeSingle();
+      if (!error && data && data.role) return String(data.role).toLowerCase();
+    } catch (_) {}
+    return metaRole ? String(metaRole).toLowerCase() : "";
+  }
+  async function afterAuth(user, username) {
+    currentUser = user;
+    if (!(await verifyUsername(user, username))) {
+      await initClient().auth.signOut();
+      currentUser = null;
+      setStatus("authStatus","The username does not match this account, or the profile username is not set. Check it or contact the administrator.","error");
+      return;
+    }
+    if (accessMode === "user") {
+      showView("userContinueView");
+      // After authentication, the user can continue to the existing site using its link.
+      return;
+    }
+    const role = await getRole(user);
+    if (!["professor","admin"].includes(role)) {
+      await initClient().auth.signOut();
+      currentUser = null;
+      showView("authView");
+      setStatus("authStatus","This account is not authorised as a professor. Ask the administrator to assign professor access in the profiles table.","error");
+      return;
+    }
+    showView("professorView");
+  }
+
+  $("chooseUsers").addEventListener("click", () => beginAuth("user"));
+  $("chooseProfessor").addEventListener("click", () => beginAuth("professor"));
+  $("backToChoices").addEventListener("click", () => showView("choiceView"));
+
+  $("authForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearStatus("authStatus");
+    const email = $("email").value.trim();
+    const username = $("username").value.trim();
+    const password = $("password").value;
+    $("signInButton").disabled = true;
+    try {
+      const sb = initClient();
+      const {data,error} = await sb.auth.signInWithPassword({email,password});
+      if (error) throw error;
+      await afterAuth(data.user,username);
+    } catch (err) {
+      setStatus("authStatus",err.message || "Sign-in failed.","error");
+    } finally { $("signInButton").disabled = false; }
+  });
+
+  $("registerButton").addEventListener("click", async () => {
+    clearStatus("authStatus");
+    const email = $("email").value.trim();
+    const username = $("username").value.trim();
+    const password = $("password").value;
+    if (!email || !username || password.length < 6) {
+      setStatus("authStatus","Enter a valid email, a username and a password of at least 6 characters.","error"); return;
+    }
+    if (accessMode === "professor") {
+      setStatus("authStatus","Professor accounts must be created/authorised by the administrator. Register as a user first, then have an administrator assign professor access.","error"); return;
+    }
+    try {
+      const {data,error} = await initClient().auth.signUp({
+        email,password,options:{data:{username}}
+      });
+      if (error) throw error;
+      if (data.user && data.session) {
+        await afterAuth(data.user,username);
+      } else {
+        setStatus("authStatus","Registration submitted. Check your email for the Supabase confirmation link, then return here to sign in.","ok");
+      }
+    } catch (err) { setStatus("authStatus",err.message || "Registration failed.","error"); }
+  });
+
+  $("prepareExam").addEventListener("click", async () => {
+    clearStatus("uploadStatus");
+    const file = $("examFile").files[0];
+    const title = $("examTitle").value.trim();
+    if (!file) { setStatus("uploadStatus","Choose a .json test file first.","error"); return; }
+    try {
+      const parsed = JSON.parse(await file.text());
+      const questions = Array.isArray(parsed) ? parsed : parsed.questions;
+      if (!Array.isArray(questions) || !questions.length) throw new Error("The JSON must contain a non-empty questions array.");
+      for (let i=0;i<questions.length;i++) {
+        const q = questions[i];
+        if (!q || typeof (q.question || q.text) !== "string" || typeof q.answer !== "boolean") {
+          throw new Error("Question " + (i+1) + " needs a question/text string and an answer set to true or false.");
+        }
+      }
+      preparedQuestions = {title:title || parsed.title || file.name.replace(/\.json$/i,""),questions};
+      setStatus("uploadStatus","File validated: " + questions.length + " True/False questions. The file is prepared, but it has NOT yet been saved or published as an exam. The database's exact exam columns and secure answer-key publishing workflow must be connected before this button can safely store it.","ok");
+    } catch (err) { preparedQuestions=null; setStatus("uploadStatus",err.message || "Could not read that file.","error"); }
+  });
+
+  $("loadResults").addEventListener("click", async () => {
+    clearStatus("resultsStatus"); $("resultsArea").replaceChildren();
+    try {
+      const sb = initClient();
+      const {data:authData,error:authError} = await sb.auth.getUser();
+      if (authError || !authData.user) throw new Error("Your session has expired. Sign in again.");
+      const {data,error} = await sb.from("exam_results").select("*").limit(100);
+      if (error) throw error;
+      if (!data || !data.length) {
+        setStatus("resultsStatus","No results are visible to this account yet, or Row Level Security permits no rows.","info");
+        return;
+      }
+      const table = document.createElement("table");
+      table.style.cssText="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;display:block;overflow-x:auto";
+      const keys = Object.keys(data[0]);
+      const head = document.createElement("tr");
+      keys.forEach(k=>{const th=document.createElement("th");th.textContent=k;th.style.cssText="text-align:left;padding:8px;border-bottom:1px solid #dce6f2";head.appendChild(th);});
+      table.appendChild(head);
+      data.forEach(row=>{const tr=document.createElement("tr");keys.forEach(k=>{const td=document.createElement("td");td.textContent=row[k]===null?"":typeof row[k]==="object"?JSON.stringify(row[k]):String(row[k]);td.style.cssText="padding:8px;border-bottom:1px solid #e7edf5";tr.appendChild(td);});table.appendChild(tr);});
+      $("resultsArea").appendChild(table);
+      setStatus("resultsStatus","Loaded " + data.length + " result record(s) visible under your current Supabase permissions.","ok");
+    } catch(err) { setStatus("resultsStatus",err.message || "Could not load results. Check the table permissions.","error"); }
+  });
+
+  async function signOut() {
+    try { if (client) await client.auth.signOut(); } catch (_) {}
+    currentUser=null; showView("choiceView");
+  }
+  $("signOut").addEventListener("click",signOut);
+  $("userSignOut").addEventListener("click",signOut);
+
+  // Deliberately start at the choice screen; never automatically sign in or redirect.
+  showView("choiceView");
+})();
+</script>
+</body>
+</html>
